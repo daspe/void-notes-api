@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const knex = require('knex');
 
-// Import controllers
-const notebook = require('./controllers/notebook');
+// Import routes
+const indexRouter = require('./routes/index');
+const nbRouter = require('./routes/nb');
 
 // Connect to database
 const db = knex({
@@ -24,11 +25,9 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors());
 
-//================================ ROUTES ======================================
-app.get('/', (req, res) => { res.send('Success') });
-app.get('/nb', (req, res) => { notebook.handleNotebook(req, res, db) });
-app.get('/nb/:key', (req, res) => { notebook.handleNotebook(req, res, db) });
-app.get('/new', (req, res) => { notebook.handleNewNotebook(req, res, db) });
+// Express router middleware
+app.use('/', indexRouter);
+app.use('/nb', nbRouter);
 
 // Get port from env variable
 let PORT = process.env.PORT;
