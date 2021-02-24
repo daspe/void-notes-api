@@ -4,8 +4,8 @@
   "description": "Express API for void-notes web app",
   "main": "app.js",
   "scripts": {
-    "start": "node server.js",
-    "startdev": "nodemon server.js",
+    "start": "node app.js",
+    "startdev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

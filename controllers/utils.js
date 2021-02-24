@@ -18,3 +18,8 @@ const getDateString = (offset) => {
     const pg_date = date.toISOString().slice(0, 10);
     return pg_date;
 }
+
+module.exports = {
+    generateKey: generateKey,
+    getDateString: getDateString,
+}

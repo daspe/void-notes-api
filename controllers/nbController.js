@@ -1,7 +1,8 @@
+const db = require('../config/db');
 const utils = require('./utils');
 
 // Create a new notebook with a random key
-const nbCreate = (req, res, db) => {
+const nbCreate = (req, res) => {
     const nb_key = utils.generateKey(30);
     const created = utils.getDateString();
     const expiration = utils.getDateString(30); // Expiration in 30 days
@@ -24,21 +25,38 @@ const nbCreate = (req, res, db) => {
 }
 
 // Renew a notebook expiration date (default: 30 days from today)
-const nbRenew = (req, res, db) => {
-    res.send('NOT IMPLEMENTED: Renew notebook expiration date');
+const nbRenew = (req, res) => {
+    const { key } = req.params;
+    if (!key) {
+        return res.status(400).send('Notebook key not given.');
+    }
+
+    const newExpirationDate = utils.getDateString(30);
+    db('notebooks').where('nb_key', '=', key)
+        .update({
+            expiration: newExpirationDate
+        })
+        .returning('*')
+        .then(nb => {
+            if (nb.length) {
+                res.json(nb[0]);
+            } else {
+                res.status(400).send(`Notebook with key "${key}" not found.`);
+            }
+        })
+        .catch(err => res.status(400).send('Notebook could not be retrieved.'));
 }
 
 // Delete a notebook from the database
-const nbDelete = (req, res, db) => {
+const nbDelete = (req, res) => {
     res.send('NOT IMPLEMENTED: Delete a notebook');
 }
 
 // Display notebook info
-const nbInfo = (req, res, db) => {
+const nbInfo = (req, res) => {
     const { key } = req.params;
-    // Validate request
     if (!key) {
-        return res.status(400).json('Notebook key not given.');
+        return res.status(400).send('Notebook key not given.');
     }
 
     // Retrieve notebook with matching key from database
@@ -48,10 +66,10 @@ const nbInfo = (req, res, db) => {
             if (nb.length) {
                 return res.json(nb[0]);
             } else {
-                return res.status(404).json(`Notebook with key "${key}" not found.`);
+                return res.status(404).send(`Notebook with key "${key}" not found.`);
             }
         })
-        .catch(err => res.status(400).json('Notebook could not be retrieved.'));
+        .catch(err => res.status(400).send('Notebook could not be retrieved.'));
 }
 
 // Export functions
