@@ -4,7 +4,7 @@ const cors = require('cors');
 
 // Import routes
 const indexRouter = require('./routes/index');
-const nbRouter = require('./routes/nb');
+const vnRouter = require('./routes/vn');
 
 // Connect to database
 const db = require('./config/db');
@@ -19,7 +19,7 @@ app.use(cors());
 
 // Express router middleware
 app.use('/', indexRouter);
-app.use('/nb', nbRouter);
+app.use('/vn', vnRouter);
 
 // Get port from env variable
 let PORT = process.env.PORT;

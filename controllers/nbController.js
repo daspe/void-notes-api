@@ -8,28 +8,24 @@ const nbCreate = (req, res) => {
     const expiration = utils.getDateString(30); // Expiration in 30 days
 
     // Create a new notebook in database
-    db.insert({
-        nb_key,
-        created,
-        expiration,
-    })
-    .into('notebooks')
-    .then(db.commit)
-    .catch(db.rollback); // ?knex rollback?
-
-    return res.json({
-        nb_key,
-        created,
-        expiration,
-    }); // ?redirect to notebook display page?
+    db('notebooks')
+        .insert({
+            nb_key,
+            created,
+            expiration,
+        })
+        .returning('*')
+        .then(nb => res.json({
+            msg: `Notebook '${nb_key}' was created`,
+            nb: nb[0]
+        }))
+        .catch(err => res.status(400).json('Notebook could not be created.'))
 }
 
 // Renew a notebook expiration date (default: 30 days from today)
 const nbRenew = (req, res) => {
     const { key } = req.params;
-    if (!key) {
-        return res.status(400).send('Notebook key not given.');
-    }
+    if (!key) {return res.status(400).json('Notebook key not given.')}
 
     const newExpirationDate = utils.getDateString(30);
     db('notebooks').where('nb_key', '=', key)
@@ -39,37 +35,55 @@ const nbRenew = (req, res) => {
         .returning('*')
         .then(nb => {
             if (nb.length) {
-                res.json(nb[0]);
+                return res.json({
+                    msg: `Notebook '${key}' expiration date renewed`,
+                    nb: nb[0]
+                });
             } else {
-                res.status(400).send(`Notebook with key "${key}" not found.`);
+                return res.status(404).json(`Notebook with key '${key}' not found.`);
             }
         })
-        .catch(err => res.status(400).send('Notebook could not be retrieved.'));
+        .catch(err => res.status(400).json('Notebook could not be retrieved.'));
 }
 
 // Delete a notebook from the database
 const nbDelete = (req, res) => {
-    res.send('NOT IMPLEMENTED: Delete a notebook');
+    const { key } = req.params;
+    if (!key) {return res.status(400).json('Notebook key not given.')}
+
+    db('notebooks').where('nb_key', '=', key)
+        .delete()
+        .returning('*')
+        .then(nb => {
+            if (nb.length) {
+                return res.json({
+                    msg: `Notebook '${key}' was deleted`,
+                    nb: nb[0]
+                })
+            } else {
+                return res.status(404).json(`Notebook with key '${key}' not found.`);
+            }
+        })
+        .catch(err => res.status(400).json('Notebook could not be retrieved.'));
 }
 
 // Display notebook info
 const nbInfo = (req, res) => {
     const { key } = req.params;
-    if (!key) {
-        return res.status(400).send('Notebook key not given.');
-    }
+    if (!key) {return res.status(400).json('Notebook key not given.')}
 
     // Retrieve notebook with matching key from database
-    db.select('*').from('notebooks')
+    db.select('*')
+        .from('notebooks')
         .where('nb_key', '=', key)
         .then(nb => {
             if (nb.length) {
                 return res.json(nb[0]);
             } else {
-                return res.status(404).send(`Notebook with key "${key}" not found.`);
+                return res.status(404).json(`Notebook with key '${key}' not found.`);
             }
         })
-        .catch(err => res.status(400).send('Notebook could not be retrieved.'));
+        .catch(err => res.status(400).json('Notebook could not be retrieved.'));
 }
 
 // Export functions
