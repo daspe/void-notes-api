@@ -1,8 +1,7 @@
-const { andWhere } = require('../config/db');
 const db = require('../config/db');
 const utils = require('./utils');
 
-// Create a note
+// Create a note on POST
 const noteCreate = (req, res) => {
     const { key } = req.params;
     const { title, note } = req.body;
@@ -26,16 +25,41 @@ const noteCreate = (req, res) => {
 
 // Edit a note
 const noteEdit = (req, res) => {
-    res.send('NOT IMPLEMENTED: Edit note');
+    const { key, id } = req.params;
+    const { newTitle, newNote } = req.body;
+    if (!key) {return res.status(400).json('Notebook key not given.')}
+    if (!id) {return res.status(400).json('Note id not given.')}
+    if (!newTitle || !newNote) {return res.status(400).json('Note update data not given.')}
+
+    db.select('*')
+        .from('notes')
+        .where('nb_key', '=', key)
+        .andWhere('id', '=', id)
+        .update({
+            title: newTitle,
+            note: newNote
+        })
+        .returning('*')
+        .then(note => {
+            if (note.length) {
+                return res.json({
+                    msg: `Note '${id}' was edited in notebook '${key}'.`,
+                    note: note[0]
+                });
+            } else {
+                return res.status(404).json(`Note '${id}' from notebook '${key}' not found.`);
+            }
+        })
+        .catch(err => res.status(400).json('Note could not be retrieved.'));
 }
 
 // Delete a note on GET
 const noteDelete = (req, res) => {
     const { key, id } = req.params;
+    const { confirmDelete } = req.body;
     if (!key) {return res.status(400).json('Notebook key not given.')}
     if (!id) {return res.status(400).json('Note id not given.')}
     
-    const { confirmDelete } = req.body;
     // Check that delete confirmation was valid in req body
     if (!confirmDelete || confirmDelete === false) {
         return res.status(403).json('Must confirm note deletion.')
@@ -48,11 +72,11 @@ const noteDelete = (req, res) => {
             .then(note => {
                 if (note.length) {
                     return res.json({
-                        msg: `Note with key '${key}' and id '${id}' was deleted`,
+                        msg: `Note '${id}' from notebook '${key}'  was deleted`,
                         note: note[0]
                     });
                 } else {
-                    return res.status(404).json(`Note with key '${key}' and id '${id}' not found.`);
+                    return res.status(404).json(`Note '${id}' from notebook '${key}' not found.`);
                 }
             })
             .catch(err => res.status(400).json('Note could not be retrieved.'));
@@ -73,7 +97,7 @@ const noteInfo = (req, res) => {
             if (note.length) {
                 return res.json(note[0]);
             } else {
-                return res.status(404).json(`Note with key '${key}' and id '${id}' not found.`);
+                return res.status(404).json(`Note '${id}' from notebook '${key}' not found.`);
             }
         })
         .catch(err => res.status(400).json('Note could not be retrieved.'));
