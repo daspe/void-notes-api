@@ -31,7 +31,32 @@ const noteEdit = (req, res) => {
 
 // Delete a note on GET
 const noteDelete = (req, res) => {
-    res.send('NOT IMPLEMENTED: Delete note');
+    const { key, id } = req.params;
+    if (!key) {return res.status(400).json('Notebook key not given.')}
+    if (!id) {return res.status(400).json('Note id not given.')}
+    
+    const { confirmDelete } = req.body;
+    // Check that delete confirmation was valid in req body
+    if (!confirmDelete || confirmDelete === false) {
+        return res.status(403).json('Must confirm note deletion.')
+    } else {
+        db('notes')
+            .where('nb_key', '=', key)
+            .andWhere('id', '=', id)
+            .delete()
+            .returning('*')
+            .then(note => {
+                if (note.length) {
+                    return res.json({
+                        msg: `Note with key '${key}' and id '${id}' was deleted`,
+                        note: note[0]
+                    });
+                } else {
+                    return res.status(404).json(`Note with key '${key}' and id '${id}' not found.`);
+                }
+            })
+            .catch(err => res.status(400).json('Note could not be retrieved.'));
+    }
 }
 
 // Display note info on GET
