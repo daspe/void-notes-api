@@ -3,20 +3,20 @@ const utils = require('./utils');
 
 // Create a new notebook with a random key
 const nbCreate = (req, res) => {
-    const nb_key = utils.generateKey(30);
+    const nbKey = utils.generateKey(30);
     const created = utils.getDateString();
     const expiration = utils.getDateString(30); // Expiration in 30 days
 
     // Create a new notebook in database
     db('notebooks')
         .insert({
-            nb_key,
+            nbKey,
             created,
             expiration,
         })
         .returning('*')
         .then(nb => res.json({
-            msg: `Notebook '${nb_key}' was created`,
+            msg: `Notebook '${nbKey}' was created`,
             nb: nb[0]
         }))
         .catch(err => res.status(400).json('Notebook could not be created.'))
@@ -28,7 +28,7 @@ const nbRenew = (req, res) => {
     if (!key) {return res.status(400).json('Notebook key not given.')}
 
     const newExpirationDate = utils.getDateString(30);
-    db('notebooks').where('nb_key', '=', key)
+    db('notebooks').where('nbKey', '=', key)
         .update({
             expiration: newExpirationDate
         })
@@ -51,7 +51,7 @@ const nbDelete = (req, res) => {
     const { key } = req.params;
     if (!key) {return res.status(400).json('Notebook key not given.')}
 
-    db('notebooks').where('nb_key', '=', key)
+    db('notebooks').where('nbKey', '=', key)
         .delete()
         .returning('*')
         .then(nb => {
@@ -75,7 +75,7 @@ const nbInfo = (req, res) => {
     // Retrieve notebook with matching key from database
     db.select('*')
         .from('notebooks')
-        .where('nb_key', '=', key)
+        .where('nbKey', '=', key)
         .then(nb => {
             if (nb.length) {
                 return res.json(nb[0]);

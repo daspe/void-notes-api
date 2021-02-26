@@ -11,7 +11,7 @@ const noteCreate = (req, res) => {
     // Create a new note in database
     db('notes')
         .insert({
-            nb_key: key,
+            nbKey: key,
             title,
             note,
         })
@@ -33,7 +33,7 @@ const noteEdit = (req, res) => {
 
     db.select('*')
         .from('notes')
-        .where('nb_key', '=', key)
+        .where('nbKey', '=', key)
         .andWhere('id', '=', id)
         .update({
             title: newTitle,
@@ -65,7 +65,7 @@ const noteDelete = (req, res) => {
         return res.status(403).json('Must confirm note deletion.')
     } else {
         db('notes')
-            .where('nb_key', '=', key)
+            .where('nbKey', '=', key)
             .andWhere('id', '=', id)
             .delete()
             .returning('*')
@@ -91,7 +91,7 @@ const noteInfo = (req, res) => {
 
     db.select('*')
         .from('notes')
-        .where('nb_key', '=', key)
+        .where('nbKey', '=', key)
         .andWhere('id', '=', id)
         .then(note => {
             if (note.length) {
@@ -110,7 +110,7 @@ const noteInfoList = (req, res) => {
 
     db.select('*')
         .from('notes')
-        .where('nb_key', '=', key)
+        .where('nbKey', '=', key)
         .then(notes => {
             if (notes.length) {
                 return res.json(notes);
