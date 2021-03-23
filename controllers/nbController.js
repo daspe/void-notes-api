@@ -56,9 +56,16 @@ const nbDelete = (req, res) => {
         .returning('*')
         .then(nb => {
             if (nb.length) {
-                return res.json({
-                    msg: `Notebook '${key}' was deleted`,
-                    nb: nb[0]
+                // Delete all notes with the same nbKey
+                db('notes').where('nbKey', '=', key)
+                    .delete()
+                    .returning('*')
+                    .then(notes => {
+                        return res.json({
+                            msg: `Notebook '${key}' was deleted`,
+                            nb: nb[0],
+                            notes
+                    })
                 })
             } else {
                 return res.status(404).json(`Notebook with key '${key}' not found.`);
