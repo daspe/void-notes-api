@@ -5,6 +5,7 @@ const router = express.Router();
 // Require controllers
 const nbController = require('../controllers/nbController');
 const noteController = require('../controllers/noteController');
+const dbController = require('../controllers/dbController');
 
 /// NOTEBOOK ROUTES ///=========================================================
 
@@ -34,28 +35,33 @@ router.get('/nb/:key', nbController.nbInfo);
 
 /// NOTE ROUTES ///=============================================================
 
-/// POST request to create a new note
+// POST request to create a new note
 router.post('/note/:key/create', noteController.noteCreate);
 
 // GET request to create a new note (BLOCKED)
 router.get('/note/:key/create', (req, res) => res.status(405).send('GET Method Not Allowed'));
 
-/// PUT request to edit a note
+// PUT request to edit a note
 router.put('/note/:key/:id/edit', noteController.noteEdit);
 
 // GET request to edit a note (BLOCKED)
 router.get('/note/:key/:id/edit', (req, res) => res.status(405).send('GET Method Not Allowed'));
 
-/// DELETE request to delete a note
+// DELETE request to delete a note
 router.delete('/note/:key/:id/delete', noteController.noteDelete);
 
 // GET request to delete a note (BLOCKED)
 router.get('/note/:key/:id/delete', (req, res) => res.status(405).send('GET Method Not Allowed'));
 
-/// GET request for a note's info
+// GET request for a note's info
 router.get('/note/:key/:id', noteController.noteInfo);
 
-/// GET request to list all notes in a notebook
+// GET request to list all notes in a notebook
 router.get('/notes/:key', noteController.noteInfoList);
+
+/// MAINTENANCE ROUTES ///======================================================
+
+// GET request to clean the db of expired notebooks/notes
+router.get('/db/clean', dbController.dbClean);
 
 module.exports = router;
