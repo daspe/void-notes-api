@@ -6,13 +6,11 @@ const cors = require('cors');
 const indexRouter = require('./routes/index');
 const vnRouter = require('./routes/vn');
 
-// Connect to database
-const db = require('./config/db');
-
 // Express server app
 const app = express();
 
 // Express middleware
+app.use(express.static('./static')); // dir for static files
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors());
